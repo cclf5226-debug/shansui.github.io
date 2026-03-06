@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>115年山水上帝廟元宵摸彩系統</title>
+    <style>
+        :root {
+            --red: #b71c1c;
+            --gold: #fbc02d;
+            --overlay: rgba(255, 255, 255, 0.92);
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* 背景設定為海報圖片 */
+            background: url('1000005383.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .main-card {
+            background: var(--overlay);
+            max-width: 500px;
+            width: 100%;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 3px solid var(--red);
+            position: relative;
+        }
+
+        .header { text-align: center; border-bottom: 2px solid var(--red); padding-bottom: 15px; margin-bottom: 20px; }
+        h2 { color: var(--red); margin: 0; }
+        
+        .info-box { background: #fff5f5; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; line-height: 1.6; border: 1px solid #ffcdd2; }
+        .highlight { color: var(--red); font-weight: bold; }
+
+        .input-section { text-align: center; margin-bottom: 20px; }
+        input { padding: 12px; font-size: 18px; width: 85%; border: 2px solid var(--red); border-radius: 8px; text-align: center; margin-bottom: 10px; }
+        .hint { font-size: 12px; color: #666; display: block; margin-top: -5px; margin-bottom: 10px; }
+
+        .btn-group { display: flex; gap: 10px; }
+        button { flex: 1; padding: 12px; font-size: 16px; cursor: pointer; border: none; border-radius: 8px; font-weight: bold; transition: 0.2s; }
+        .btn-check { background: var(--red); color: var(--gold); }
+        .btn-reset { background: #757575; color: white; }
+        button:hover { opacity: 0.9; }
+
+        #result { margin-top: 20px; max-height: 300px; overflow-y: auto; }
+        .win-item { background: #fffde7; border: 1px solid var(--gold); padding: 10px; margin-bottom: 8px; border-radius: 5px; animation: slideIn 0.3s; }
+        .lose-msg { text-align: center; color: #666; font-size: 18px; padding: 20px; }
+        .disclaimer { font-size: 11px; color: #888; text-align: center; margin-top: 20px; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="main-card">
+    <div class="header">
+        <h2>🏮 山水上帝廟 115年元宵摸彩</h2>
+    </div>
+
+    <div class="info-box">
+        📅 <span class="highlight">領獎期限：</span>115/03/09 ~ 115/03/31<br>
+        ⏰ <span class="highlight">領獎時段：</span>09:00-12:00 / 14:00-17:00<br>
+        📢 <span class="highlight">備註：</span>內容如有錯誤，以廟方現場公告為準。
+    </div>
+
+    <div class="input-section">
+        <input type="text" id="ticketNumber" placeholder="請輸入彩券號碼" maxlength="15">
+        <span class="hint">可輸入單號 (12345) 或 連號 (12345-65)</span>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkPrize()">開始對獎</button>
+            <button class="btn-reset" onclick="resetForm()">重置</button>
+        </div>
+    </div>
+
+    <div id="result"></div>
+    <div class="disclaimer">※ 本系統僅供參考，正確中獎資訊以現場公告為準。</div>
+</div>
+
+<script>
+    // 整合 03.03, 03.04, 03.05 的得獎資料
+    const prizeData = [
+        {
+            date: "115.03.03",
+            prizes: {
+                "頭獎：汽車 Yaris Cross (灰)": ["37565"],
+                "二獎：iPhone 17 Pro Max": ["16168", "27756", "27257"],
+                "三獎：iPhone 17": ["38639", "25026", "31857", "34386", "27413"],
+                "四獎：任天堂 Switch 2": ["22151", "38818", "18288", "22486", "19355"],
+                "五獎：一錢金條": ["18087", "15244", "20140", "17163", "34250"],
+                "六獎：Apple Watch S11": ["15195", "18242", "34182", "31415", "34238"],
+                "七獎：iPad 11 128G": ["13023", "39355", "38739", "36033", "30080"],
+                "八獎：黃金戒指": ["39791", "16127", "32191", "23414", "10972", "21801", "26042", "29557", "29148", "26423"],
+                "九獎：黃金貔貅": ["27303", "35692", "14257", "16774", "35542", "39858", "13577", "24200", "23685", "10380"],
+                "十獎：黃金元寶": ["25760", "37766", "18015", "27624", "10553", "14914", "37067", "23887", "12330", "18668"]
+            },
+            tail3: ["998", "182", "417"],
+            tail2: ["10"]
+        },
+        {
+            date: "115.03.04",
+            prizes: {
+                "頭獎：汽車 Yaris Cross (白)": ["18828"],
+                "二獎：iPhone 17 Pro Max": ["34974", "30621", "27820"],
+                "三獎：iPhone 17": ["28772", "13822", "32512", "28448", "11269"],
+                "四獎：任天堂 Switch 2": ["16209", "31016", "32604", "13836", "22395"],
+                "五獎：一錢金條": ["18777", "26103", "32597", "12950", "27311"],
+                "六獎：Apple Watch S11": ["25614", "11849", "38543", "19208", "12668"],
+                "七獎：iPad 11 128G": ["30219", "39864", "28639", "15935", "16708"],
+                "八獎：黃金戒指": ["37905", "30625", "19576", "19994", "21207", "30265", "35612", "33806", "12811", "30455", "31231"],
+                "九獎：黃金貔貅": ["16735", "22876", "27623", "38365", "29122", "39629", "19841", "37630", "29719", "37212"],
+                "十獎：黃金元寶": ["20554", "23510", "24222", "21880", "26100", "12178", "28209", "36546", "26341", "34183"]
+            },
+            tail3: ["932", "729", "079"],
+            tail2: ["57"]
+        },
+        {
+            date: "115.03.05",
+            prizes: {
+                "頭獎：汽車 Corolla Cross (銀)": ["16356"],
+                "二獎：iPhone 17 Pro Max": ["35407", "31075", "14903"],
+                "三獎：iPhone 17": ["31768", "20206", "31258", "39605", "16116"],
+                "四獎：任天堂 Switch 2": ["21391", "38072", "16711", "36344", "20536"],
+                "五獎：一錢金條": ["39567", "21780", "20750", "14483", "39356"],
+                "六獎：Apple Watch S11": ["38346", "14547", "17450", "10180", "30036"],
+                "七獎：iPad 11 128G": ["13733", "15812", "35622", "19093", "11052"],
+                "八獎：黃金戒指": ["15619", "13883", "18112", "14366", "15604", "26233", "38968", "24978", "38685", "17252"],
+                "九獎：黃金貔貅": ["26210", "38673", "30049", "22182", "30293", "11945", "25203", "35232", "22173", "18233"],
+                "十獎：黃金元寶": ["34312", "23387", "22224", "19696", "27544", "16499", "28357", "27027", "31212", "37363"]
+            },
+            tail3: ["600", "976", "307"],
+            tail2: ["73"]
+        }
+    ];
+
+    function checkPrize() {
+        const input = document.getElementById('ticketNumber').value.trim();
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = "";
+        
+        if (!input) { alert("請輸入號碼"); return; }
+
+        let numbersToCheck = [];
+        const rangeMatch = input.match(/^(\d+)-(\d+)$/);
+
+        // 解析連續號碼
+        if (rangeMatch) {
+            const startStr = rangeMatch[1];
+            const endSuffix = rangeMatch[2];
+            if (endSuffix.length < startStr.length) {
+                const prefix = startStr.substring(0, startStr.length - endSuffix.length);
+                const startVal = parseInt(startStr.substring(startStr.length - endSuffix.length));
+                const endVal = parseInt(endSuffix);
+                for (let i = startVal; i <= endVal; i++) {
+                    numbersToCheck.push(prefix + i.toString().padStart(endSuffix.length, '0'));
+                }
+            } else {
+                const startVal = parseInt(startStr);
+                const endVal = parseInt(endSuffix);
+                for (let i = startVal; i <= endVal; i++) {
+                    numbersToCheck.push(i.toString().padStart(startStr.length, '0'));
+                }
+            }
+        } else {
+            numbersToCheck.push(input);
+        }
+
+        let allWinHtml = "";
+        numbersToCheck.forEach(num => {
+            let winsForThisNum = [];
+            prizeData.forEach(day => {
+                // 核對大獎
+                for (let pName in day.prizes) {
+                    if (day.prizes[pName].includes(num)) {
+                        winsForThisNum.push(`[${day.date}] 🎉 ${pName}`);
+                    }
+                }
+                // 核對普獎
+                if (day.tail3.some(t => num.endsWith(t))) {
+                    winsForThisNum.push(`[${day.date}] 🧧 普獎：金花 (末3碼)`);
+                } else if (day.tail2.some(t => num.endsWith(t))) {
+                    winsForThisNum.push(`[${day.date}] 🧧 普獎：金豆 (末2碼)`);
+                }
+            });
+
+            if (winsForThisNum.length > 0) {
+                winsForThisNum.forEach(w => {
+                    allWinHtml += `<div class="win-item"><strong>號碼 ${num}：</strong><br>${w}</div>`;
+                });
+            }
+        });
+
+        if (allWinHtml) {
+            resultDiv.innerHTML = allWinHtml;
+        } else {
+            resultDiv.innerHTML = `<div class="lose-msg">😅 明年繼續加油！</div>`;
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('ticketNumber').value = "";
+        document.getElementById('result').innerHTML = "";
+    }
+</script>
+
+</body>
+</html>
